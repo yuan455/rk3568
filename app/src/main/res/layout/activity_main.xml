@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_bg"
+    android:orientation="vertical"
+    tools:context=".MainActivity"
+    android:hardwareAccelerated="true">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="串口设置"
+        android:textSize="17sp"
+        android:textColor="#E91E63"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="122dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/bg_frame"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:baselineAligned="false"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="40dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="串口号"
+                    android:textColor="@color/black"/>
+
+                <Spinner
+                    android:id="@+id/sp_serial"
+                    android:layout_width="150dp"
+                    android:layout_height="40dp"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_gravity="right"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="波特率"
+                    android:textColor="@color/black"/>
+
+                <Spinner
+                    android:id="@+id/sp_baud"
+                    android:layout_width="150dp"
+                    android:layout_height="40dp"
+                    android:gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="40dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="数据位"
+                    android:textColor="@color/black"/>
+
+                <Spinner
+                    android:id="@+id/sp_data"
+                    android:layout_width="150dp"
+                    android:layout_height="40dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="停止位"
+                    android:textColor="@color/black"/>
+
+                <Spinner
+                    android:id="@+id/sp_stop"
+                    android:layout_width="150dp"
+                    android:layout_height="40dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="40dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="校验位"
+                    android:textColor="@color/black"/>
+
+                <Spinner
+                    android:id="@+id/sp_parity"
+                    android:layout_width="150dp"
+                    android:layout_height="40dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="流控制"
+                    android:textColor="@color/black"/>
+
+                <Spinner
+                    android:id="@+id/sp_flow"
+                    android:layout_width="150dp"
+                    android:layout_height="40dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送设置"
+            android:textColor="#009688"
+            android:textSize="17sp"
+            android:layout_marginLeft="10dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/bg_frame"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RadioGroup
+                android:id="@+id/rg_send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_sd_hex"
+                    android:layout_width="100dp"
+                    android:layout_height="30dp"
+                    android:layout_marginRight="30dp"
+                    android:background="@drawable/rb_bg"
+                    android:text="HEX发送"
+                    android:textColor="@color/black"
+                    android:theme="@style/MyRadioButton" />
+
+                <RadioButton
+                    android:id="@+id/rb_sd_ascii"
+                    android:layout_width="80dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="45dp"
+                    android:background="@drawable/rb_bg"
+                    android:text="ASCII"
+                    android:checked="true"
+                    android:textColor="@color/black"
+                    android:theme="@style/MyRadioButton" />
+            </RadioGroup>
+
+            <CheckBox
+                android:id="@+id/cb_time_send"
+                android:layout_width="100dp"
+                android:layout_height="30dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/cb_bg"
+                android:gravity="center"
+                android:text="定时发送" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="接收设置"
+            android:textColor="#172DA6"
+            android:textSize="17sp"
+            android:layout_marginLeft="10dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/bg_frame"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RadioGroup
+                android:id="@+id/rg_rv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_rv_hex"
+                    android:layout_width="100dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/rb_bg"
+                    android:text="HEX显示"
+                    android:textColor="@color/black"
+                    android:theme="@style/MyRadioButton"
+                    android:layout_marginRight="40dp"/>
+
+                <RadioButton
+                    android:id="@+id/rb_rv_ascii"
+                    android:layout_width="80dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/rb_bg"
+                    android:text="ASCII"
+                    android:checked="true"
+                    android:textColor="@color/black"
+                    android:theme="@style/MyRadioButton"
+                    android:layout_marginRight="45dp"/>
+            </RadioGroup>
+<!--            <ToggleButton-->
+<!--                android:id="@+id/btn_save"-->
+<!--                android:layout_width="100dp"-->
+<!--                android:layout_height="35dp"-->
+<!--                android:textColor="#000000"-->
+<!--                android:textOff="自动"-->
+<!--                android:textOn="结束"-->
+<!--                android:background="@drawable/button_selector"-->
+<!--                />-->
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="100dp"
+                android:layout_height="35dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/bt_bg"
+                android:text="保存到文件"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:theme="@style/MyRadioButton" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="left"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <Button
+            android:id="@+id/btn_open"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:text="打开串口"
+            android:textColor="@color/black"
+            android:theme="@style/MyRadioButton"
+            android:layout_marginRight="40dp"/>
+        <Button
+            android:id="@+id/btn_close"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:text="关闭串口"
+            android:textColor="@color/black"
+            android:theme="@style/MyRadioButton"/>
+<!--        <ToggleButton-->
+<!--            android:id="@+id/btn_open"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="45dp"-->
+<!--            android:textColor="#000000"-->
+<!--            android:textOff="打开串口"-->
+<!--            android:textOn="关闭串口"-->
+<!--            android:background="@drawable/button_selector" />-->
+        <TextView
+            android:id="@+id/txt_show"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            android:layout_marginLeft="10dp"
+            android:gravity="left|bottom"
+            android:layout_marginBottom="5dp"
+            />
+
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/et_send"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@color/white"
+        android:hint="发送信息"
+        android:textColor="@color/black" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_send"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/bt_bg"
+            android:text="发送"
+            android:textColor="@color/black"
+            android:theme="@style/MyRadioButton"/>
+
+        <Button
+            android:id="@+id/btn_clear_send"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/bt_bg"
+            android:text="清空发送区"
+            android:textColor="@color/black"
+            android:theme="@style/MyRadioButton"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/txt_rev"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@color/white"
+                android:textColor="@color/black"
+                />
+        </LinearLayout>
+    </ScrollView>
+    <Button
+        android:id="@+id/btn_clear_rev"
+        android:layout_width="wrap_content"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/bt_bg"
+        android:text="清空缓冲区"
+        android:textColor="@color/black"
+        android:theme="@style/MyRadioButton"
+        />
+
+
+</LinearLayout>
