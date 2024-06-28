@@ -29,9 +29,13 @@ import android.widget.Toast;
 
 import com.example.serial.databinding.ActivityMainBinding;
 
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -68,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     // 打开串口&关闭串口
     private Button mBtnOpen;
     private Button mBtnClose;
+    private Button mBtnState;
 
 
     // 设置串口的参数
@@ -85,19 +90,25 @@ public class MainActivity extends AppCompatActivity {
     String[] stopArray;
     String[] parityArray;
     String[] flowArray;
-    String sendWay;
-    String revWay;
+    String sendWay = "ASCII";
+    String revWay = "ASCII";
     String sendData;
     String revData;
+    String currenState = "recv";
     boolean isHexSend; // 是否以HEX发送
     boolean isHexRecv;
     int    sendOnTime;
     int    maxLen = 1024;
+    int    state = 0;
     private static final int MSG_SEND_DATA = 1;
 
     boolean turnFlag = false;
     private SerialControl serialControl;
     private HexUtils hexUtils = new HexUtils();
+    Runnable runnable;
+    private volatile boolean receiving = false;
+    private Thread receiveThread;
+
 
     private Handler mHandler = new Handler(Looper.getMainLooper()){
         public void handleMessage(Message msg){
@@ -107,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,13 +149,16 @@ public class MainActivity extends AppCompatActivity {
         mEtSend = findViewById(R.id.et_send);
         mTvRev = findViewById(R.id.txt_rev);
         mTvShow = findViewById(R.id.txt_show);
+        mBtnState = findViewById(R.id.changeState);
 
 
         // 获取所有可用的串口。除了串口需要扫描获得数据外，其他的都是固定的值
         serialArray = new String[]{"dev/ttyS9"};
 
         // 还没有连接串口时，显示not connected
-        serialClosed();
+        mTvShow.setTextColor(Color.parseColor("#FF0000"));
+        mTvShow.setText("NOT CONNECTED"+"接收模式");
+        mTvShow.setPaintFlags(mTvShow.getPaintFlags() | Paint.ANTI_ALIAS_FLAG);
         // 设置并监听下拉列表
         setSpinner(mSpSerial);
         setSpinner(mSpBaud);
@@ -184,41 +199,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        mTvShow.getPaint().setAntiAlias(true);
-
-        // 接收串口数据
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                byte[] msg = new  byte[1024];
-//                int len = 1024; // 读取数据的长度
-//                int timeout = 1000; // 超时时间，单位为毫秒
-//
-//                while (true){
-//                    int result = serialControl.recvFromPort(Arrays.toString(msg), len, timeout);
-//                    if (result > 0){
-//                        final String recvData = new String(msg, 0, result);
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                mTvRev.setText(recvData);
-//                            }
-//                        });
-//                    } else if ( 0 == result ) {
-//                        Log.d("MainActivity", "Timeout");
-//                    }else {
-//                        Log.e("MainActivity", "Read data from port falied");
-//                    }
-//                }
-//
-//            }
-//        }).start();
-        mTvRev.setText(HexUtils.bytesToHexString("hahaha".getBytes()));
-
-        // 如果选中定时发送，则每隔30秒发送一次信息
-        while (sendOnTime == 1){
-            mHandler.sendEmptyMessageDelayed(MSG_SEND_DATA, 30*1000);
+        if (sendOnTime == 1){
+            startTimeSending();
         }
+    }
+
+    private void startTimeSending(){
+        // 如果选中定时发送，则每隔30秒发送一次信息
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                // 模拟按钮点击
+                mBtnSend.performClick();
+                // 30秒后再次运行
+                mHandler.postDelayed(this, 30000);
+            }
+        };
+// 开始首次运行
+        mHandler.post(runnable);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacks(runnable);
     }
 
     private void setSpinner(Spinner spinner){
@@ -293,6 +297,7 @@ public class MainActivity extends AppCompatActivity {
         mBtnClearRev.setOnClickListener(onClick);
         mBtnClearSend.setOnClickListener(onClick);
         mBtnSend.setOnClickListener(onClick);
+        mBtnState.setOnClickListener(onClick);
     }
     private class OnClick implements View.OnClickListener{
 
@@ -300,27 +305,37 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             int id = v.getId();
             if (id == R.id.btn_save) {
-                // 将接收的内容保存在文件中
-//                Toast.makeText(MainActivity.this, "保存到文件中", Toast.LENGTH_SHORT).show();
+                String file_buf = serialControl.saveToFile(revData, revData.length(), "rev_log.txt");
+                Toast.makeText(MainActivity.this, "wenjian"+file_buf, Toast.LENGTH_SHORT).show();
             } else if (id == R.id.btn_open) {
-                int rv = serialControl.openSerialPort(serial, (int) baudRate, dataBits, parity, (int) stopBits, flowControl, maxLen);
-                if (rv < 0) {
-                    Toast.makeText(MainActivity.this, "打开串口失败", Toast.LENGTH_SHORT).show();
+                if (turnFlag) {
+                    Toast.makeText(MainActivity.this, "串口已打开, 不能重复打开", Toast.LENGTH_SHORT).show();
                 }else {
-                    turnFlag = true;
-                    serialOpened();
-                    Toast.makeText(MainActivity.this, "成功打开串口", Toast.LENGTH_SHORT).show();
+                    int rv = serialControl.openSerialPort(serial, (int) baudRate, dataBits, parity, (int) stopBits, flowControl, maxLen);
+                    if (rv < 0) {
+                        Toast.makeText(MainActivity.this, "打开串口失败", Toast.LENGTH_SHORT).show();
+                    } else {
+                        turnFlag = true;
+                        startReceiving(); // 串口打开后默认开始读
+                        serialOpened();
+                        Toast.makeText(MainActivity.this, "成功打开串口", Toast.LENGTH_SHORT).show();
+                    }
                 }
             } else if (id == R.id.btn_close){
-                // 关闭串口
-                int rv = serialControl.closeSerialPort();
-//                    Toast.makeText(MainActivity.this, "close", Toast.LENGTH_SHORT).show();
-                if (rv < 0) {
-                    Toast.makeText(MainActivity.this, "关闭串口失败", Toast.LENGTH_SHORT).show();
+                if (!turnFlag) {
+                    Toast.makeText(MainActivity.this, "串口已关闭，不能重复关闭", Toast.LENGTH_SHORT).show();
                 }else {
-                    turnFlag = false;
-                    serialClosed();
-                    Toast.makeText(MainActivity.this, "关闭串口", Toast.LENGTH_SHORT).show();
+                    // 关闭串口
+                    int rv = serialControl.closeSerialPort();
+//                    Toast.makeText(MainActivity.this, "close", Toast.LENGTH_SHORT).show();
+                    if (rv < 0) {
+                        Toast.makeText(MainActivity.this, "关闭串口失败", Toast.LENGTH_SHORT).show();
+                    } else {
+                        turnFlag = false;
+                        stopReceiving(); //关闭串口，停止接收
+                        serialClosed();
+                        Toast.makeText(MainActivity.this, "关闭串口", Toast.LENGTH_SHORT).show();
+                    }
                 }
             } else if (id == R.id.btn_clear_rev) {
                 // 清空接收区数据
@@ -339,11 +354,11 @@ public class MainActivity extends AppCompatActivity {
                 }else if(sendData.isEmpty()){
                     // 判断发送区是否为空,如果为空则弹出提示
                     Toast.makeText(MainActivity.this, "发送区为空，请输入数据！", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(MainActivity.this, "sendWay"+sendWay, Toast.LENGTH_SHORT).show();
-                    if( sendWay == "HEX")
+                } else if (currenState.equals("recv")) {
+                    Toast.makeText(MainActivity.this, "串口未处于发送状态，不能发送数据!", Toast.LENGTH_SHORT).show();
+                } else {
+                    if( sendWay.equals("HEX发送"))
                     {
-                        Toast.makeText(MainActivity.this, "HEX in ", Toast.LENGTH_SHORT).show();
                         mEtSend.getText().clear();
                         mEtSend.setText(HexUtils.bytesToHexString(sendData.getBytes()));
                     }
@@ -355,20 +370,101 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "发送数据成功", Toast.LENGTH_SHORT).show();
 
                 }
+            } else if (id == R.id.changeState) {
+                if (state == 1){
+                    // 当前GPIO为0，按下按钮后，GPIO设置为0
+                    if( serialControl.changeState(0) < 0 ){
+                        Log.e("Change State for send", "Change State as send failed");
+                    }else {
+                        stopReceiving(); // 发送模式下不接收
+                        mBtnState.setText("接收模式");
+                        state = 0;
+                        currenState = "send";
+                        if (turnFlag)
+                            serialOpened();
+                        else
+                            serialClosed();
+                    }
+                }else if (state == 0){
+                    if( serialControl.changeState(1) < 0 ){
+                        Log.e("Change State for recv", "Change State as recv failed");
+                    }else {// 接收串口数据, 同时包含当前时间戳
+                        startReceiving();
+                        state = 1;
+                        mBtnState.setText("发送模式");
+                        currenState = "recv";
+                        if (turnFlag)
+                            serialOpened();
+                        else
+                            serialClosed();
+                    }
+
+                }
             }
         }
     }
 
     private void serialClosed(){
         mTvShow.setTextColor(Color.parseColor("#FF0000"));
-        mTvShow.setText("NOT CONNECTED");
+        if (currenState.equals("recv"))
+            mTvShow.setText("NOT CONNECTED"+"接收模式");
+        else if (currenState.equals("send")) {
+            mTvShow.setText("NOT CONNECTED"+"发送模式");
+        }
         mTvShow.setPaintFlags(mTvShow.getPaintFlags() | Paint.ANTI_ALIAS_FLAG);
     }
 
     private void serialOpened(){
         mTvShow.setTextColor(Color.parseColor("#1FA324"));
-        mTvShow.setText(serial+" OPENED, "+baudRate+", "+dataBits+", "+stopBits+", "+parity);
+        if (currenState.equals("recv"))
+            mTvShow.setText(serial+" OPENED, "+baudRate+", "+dataBits+", "+stopBits+", "+parity+", "+"接收模式");
+        else if (currenState.equals("send")) {
+            mTvShow.setText(serial+" OPENED, "+baudRate+", "+dataBits+", "+stopBits+", "+parity+", "+"发送模式");
+        }
+
         mTvShow.setPaintFlags(mTvShow.getPaintFlags() | Paint.ANTI_ALIAS_FLAG);
     }
 
+
+    public void startReceiving() {
+        receiving = true;
+        receiveThread = new Thread(() -> {
+            while (receiving) {
+                int len = 1024;
+                int timeout = 10;
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                df.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+                String date = df.format(new Date());
+                String buf = serialControl.recvFromPort(len, timeout); // 超时时间设置为 1000 ms
+                if (buf != null) {
+                    // 在主线程上更新 UI
+                    mTvRev.post(() -> {
+                        String revData = date + "\t" + buf;
+                        String currentText = mTvRev.getText().toString();
+                        String newText = currentText + "\n" + revData; // 追加新数据
+                        mTvRev.setText(newText);
+                    });
+                } else if (buf == null) {
+                    System.err.println("Error receiving data.");
+                }
+                try {
+                    Thread.sleep(10); // 每 10 ms 读取一次数据
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        receiveThread.start();
+    }
+
+    public void stopReceiving() {
+        receiving = false;
+        if (receiveThread != null) {
+            try {
+                receiveThread.join(); // 等待线程结束
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

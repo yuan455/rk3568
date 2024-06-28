@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Test_CAN</string>
+    <string-array name="can_name">
+        <item>can0</item>
+        <item>can1</item>
+    </string-array>
+</resources>
